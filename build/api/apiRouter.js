@@ -19,9 +19,17 @@ router.post('/fetchStash', async (req, res, next) => {
 router.post('/fetchNextStash/:id', async (req, res, next) => {
   api.get('http://www.pathofexile.com/api/public-stash-tabs' + '?id=' + req.params.id)
   .then(function (response) {
-    console.log(response.data)
-    console.log(req.params.id)
     res.send(response.data)
+  })
+  .catch(function (error) {
+    console.log(error)
+  })
+})
+
+router.post('/getNextID', async (req, res, next) => {
+  api.get('http://api.poe.ninja/api/Data/GetStats')
+  .then(function (response) {
+    res.send(response.data.nextChangeId)
   })
   .catch(function (error) {
     console.log(error)

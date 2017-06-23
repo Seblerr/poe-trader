@@ -1,23 +1,7 @@
 <template>
 <div class="hello">
-  <h1>{{ msg }}</h1>
-  <h1>{{ nextId }}</h1>
-  <h2>Essential Links</h2>
-  <ul>
-    <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-    <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-    <li><a href="https://gitter.im/vuejs/vue" target="_blank">Gitter Chat</a></li>
-    <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-    <br />
-    <li><a href="http://vuejs-templates.github.io/webpack/" target="_blank">Docs for This Template</a></li>
-  </ul>
-  <h2>Ecosystem</h2>
-  <ul>
-    <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-    <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-    <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-    <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-  </ul>
+  <h1>{{ nextID }}</h1>
+
 </div>
 </template>
 
@@ -32,44 +16,36 @@ export default {
   },
   data () {
     return {
-      msg: 'Hej wanka',
-      nextId: ''
+      nextID: ''
     }
   },
   methods: {
     async init () {
-      var nextId
       var nextStash
-      const response = await api.post('/api/fetchStash/')
-      if (response.data.error) {
-        console.log(response.data.error.message)
-      } else {
-        nextId = response.data.next_change_id
-        // console.log(nextId)
-        nextStash = await this.getNextStash(nextId)
-        console.log(nextStash)
-        nextId = nextStash.next_change_id
-        console.log(nextId)
-        while (nextStash.stashes.length !== 0) {
-          nextStash = await this.getNextStash(nextId)
-          nextId = nextStash.next_change_id
-          console.log(nextStash)
-          console.log(nextId)
+      this.nextID = await this.getID()
+      // console.log(nextID)
+      nextStash = await this.getNextStash(this.nextID)
+      console.log(nextStash)
+      this.nextID = nextStash.next_change_id
+      // console.log(nextId)
+      while (true) {
+        nextStash = await this.getNextStash(this.nextID)
+        if (nextStash.error) {
           await this.sleep(5000)
         }
-
-        // var stashArray = response.data.stashes
-        // console.log(stashArray)
+        this.nextID = nextStash.next_change_id
+        console.log(nextStash)
+        // console.log(nextId)
+        await this.sleep(1000)
       }
     },
     async getNextStash (id) {
-      // setInterval(async function () {
       const response = await api.post(`/api/fetchNextStash/${id}`)
       return response.data
-      // }, 5000)
     },
-    getId (stash) {
-      return stash.next_change_id
+    async getID () {
+      const response = await api.post(`/api/getNextID`)
+      return response.data
     },
     sleep (ms) {
       return new Promise(resolve => setTimeout(resolve, ms))
@@ -80,6 +56,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 h1,
 h2 {
   font-weight: normal;

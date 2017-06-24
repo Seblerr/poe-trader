@@ -21,32 +21,49 @@ export default {
   },
   methods: {
     async init () {
-      var nextStash
       this.nextID = await this.getID()
-      // console.log(nextID)
-      nextStash = await this.getNextStash(this.nextID)
-      console.log(nextStash)
-      this.nextID = nextStash.next_change_id
-      // console.log(nextId)
       while (true) {
-        nextStash = await this.getNextStash(this.nextID)
+        var nextStash = await this.getNextStash(this.nextID)
         if (nextStash.error) {
+          console.log(nextStash.error)
           await this.sleep(5000)
         }
+        var stashes = nextStash.stashes
+        var items = await this.getItems(stashes)
+        console.log(stashes)
+
+        console.log(items)
         this.nextID = nextStash.next_change_id
-        console.log(nextStash)
+        await this.sleep(2000)
+
+      // console.log(nextStash)
         // console.log(nextId)
-        await this.sleep(1000)
       }
     },
+
     async getNextStash (id) {
       const response = await api.post(`/api/fetchNextStash/${id}`)
       return response.data
     },
+
     async getID () {
       const response = await api.post(`/api/getNextID`)
       return response.data
     },
+
+    async getItems (stashes) {
+      var items = []
+      stashes.forEach(function (stash) {
+        items.concat.apply(stash.items)
+        // console.log(stash)
+        // stash.items.forEach(function (item) {
+          // items.push(item)
+          // console.log(item)
+      })
+
+      return items
+    },
+
     sleep (ms) {
       return new Promise(resolve => setTimeout(resolve, ms))
     }

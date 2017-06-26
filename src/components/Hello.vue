@@ -1,10 +1,41 @@
 <template>
+
 <div class="hello">
-  <h1>{{ nextID }}</h1>
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap@next/dist/css/bootstrap.min.css"/>
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+
+  <input v-model="msg" v-on:keyup.enter="searchItem(msg)"/><br><br>
+  <button class="btn btn-book" v-on:click="searchItem(msg)">Search</button><br><br>
+
+
+  <table class="table table-bordered table-hover table-sm">
+    <thead>
+      <!-- Correct headers are set here -->
+      <tr class="table-titles">
+        <th> Item </th>
+        <th> Price </th>
+        <th> League </th>
+        <th> Character Name </th>
+        <!-- <th> From: Location </th> -->
+      </tr>
+    </thead>
+    <tbody align="left">
+      <tr v-for="item in searchResult">
+        <td> {{ item.name }} </td>
+        <td> {{ item.note }} </td>
+        <td> {{ item.league }}</td>
+        <td> {{ item.lastCharacterName }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+
 
 </div>
 </template>
-
+<script src="//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+<script src="//unpkg.com/tether@latest/dist/js/tether.min.js"></script>
+<script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
 <script>
 import axios from 'axios'
 const api = axios.create()
@@ -15,23 +46,27 @@ export default {
   },
   data () {
     return {
+      msg: '',
       nextID: '',
-      allItems: ''
+      allItems: '',
+      searchResult: '',
+      currentItems: ''
     }
   },
   methods: {
     async init () {
       var allItems = []
-
       this.nextID = await this.getID()
       while (true) {
         await this.getStashes(this.nextID).then(async (response) => {
           var stashes = response.stashes
+          // console.log(stashes)
           var items = await this.getItems(stashes)
+          // console.log(items)
           allItems = allItems.concat(items)
+          this.allItems = allItems
           // console.log(allItems)
           this.nextID = response.next_change_id
-          // this.allItems = allItems
           await this.sleep(1000)
         })
       }
@@ -50,28 +85,32 @@ export default {
     async getItems (stashes) {
       var items = []
       stashes.forEach(function (stash) {
-        // console.log(stash)
-        // stash.items.forEach(function (item) {
         items.push({lastCharacterName: stash.lastCharacterName,
           items: stash.items})
         // })
       })
-      this.searchItems("Kaom's Heart", items)
-      // console.log(items)
       return items
     },
 
-    searchItems (keyword, items) {
-      // console.log(items)
-      items.forEach(function (item) {
-        item.items.forEach(function (itemz) {
-          if (keyword === itemz.name.substring(28)) {
-            console.log('found item')
-            return item.lastCharacterName
+    searchItem (keyword) {
+      var self = this
+      var results = []
+
+      this.allItems.forEach(function (stash) {
+        stash.items.forEach(function (item) {
+          // console.log(item.note.substring(4))
+          if (keyword === item.name.substring(28)) {
+            results.push({
+              lastCharacterName: stash.lastCharacterName,
+              note: item.note,
+              name: item.name.substring(28),
+              league: item.league
+            })
+            self.searchResult = results
           }
         })
-        // console.log(item)
       })
+      console.log(self.searchResult)
     },
 
     sleep (ms) {
@@ -83,8 +122,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+
 h1,
 h2 {
   font-weight: normal;

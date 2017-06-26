@@ -6,7 +6,6 @@
 </template>
 
 <script>
-// import * as api from '../api'
 import axios from 'axios'
 const api = axios.create()
 
@@ -16,33 +15,30 @@ export default {
   },
   data () {
     return {
-      nextID: ''
+      nextID: '',
+      allItems: ''
     }
   },
   methods: {
     async init () {
+      var allItems = []
+
       this.nextID = await this.getID()
       while (true) {
-        var nextStash = await this.getNextStash(this.nextID)
-        if (nextStash.error) {
-          console.log(nextStash.error)
-          await this.sleep(5000)
-        }
-        var stashes = nextStash.stashes
-        var items = await this.getItems(stashes)
-        console.log(stashes)
-
-        console.log(items)
-        this.nextID = nextStash.next_change_id
-        await this.sleep(2000)
-
-      // console.log(nextStash)
-        // console.log(nextId)
+        await this.getStashes(this.nextID).then(async (response) => {
+          var stashes = response.stashes
+          var items = await this.getItems(stashes)
+          allItems = allItems.concat(items)
+          // console.log(allItems)
+          this.nextID = response.next_change_id
+          // this.allItems = allItems
+          await this.sleep(1000)
+        })
       }
     },
 
-    async getNextStash (id) {
-      const response = await api.post(`/api/fetchNextStash/${id}`)
+    async getStashes (id) {
+      const response = await api.post(`/api/getStashes/${id}`)
       return response.data
     },
 
@@ -54,14 +50,28 @@ export default {
     async getItems (stashes) {
       var items = []
       stashes.forEach(function (stash) {
-        items.concat.apply(stash.items)
         // console.log(stash)
         // stash.items.forEach(function (item) {
-          // items.push(item)
-          // console.log(item)
+        items.push({lastCharacterName: stash.lastCharacterName,
+          items: stash.items})
+        // })
       })
-
+      this.searchItems("Kaom's Heart", items)
+      // console.log(items)
       return items
+    },
+
+    searchItems (keyword, items) {
+      // console.log(items)
+      items.forEach(function (item) {
+        item.items.forEach(function (itemz) {
+          if (keyword === itemz.name.substring(28)) {
+            console.log('found item')
+            return item.lastCharacterName
+          }
+        })
+        // console.log(item)
+      })
     },
 
     sleep (ms) {

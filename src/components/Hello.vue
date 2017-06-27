@@ -52,8 +52,7 @@ export default {
       nextID: '',
       allItems: '',
       searchResult: '',
-      currentItems: '',
-      image: ''
+      currentItems: ''
     }
   },
   methods: {
@@ -104,7 +103,6 @@ export default {
           // console.log(item)
           // console.log(item.note.substring(4))
           if (keyword === item.name.substring(28)) {
-            self.image = item.icon
             results.push({
               lastCharacterName: stash.lastCharacterName,
               note: item.note,
@@ -117,7 +115,6 @@ export default {
           }
         })
       })
-      // }, 3000)
     },
 
     sleep (ms) {

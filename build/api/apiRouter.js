@@ -22,7 +22,7 @@ const api = axios.create()
 router.post('/getStashes/:id', async (req, res, next) => {
   api.get('http://www.pathofexile.com/api/public-stash-tabs' + '?id=' + req.params.id)
   .then(function (response) {
-    console.log(response.data)
+    // console.log(response.data)
     res.send(response.data)
   })
   .catch(function (error) {

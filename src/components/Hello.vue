@@ -4,14 +4,15 @@
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap@next/dist/css/bootstrap.min.css"/>
   <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
 
-  <input v-model="msg" v-on:keyup.enter="searchItem(msg)"/><br><br>
+  <input v-model="msg" value="Kaom's Sign" placeholder="Kaom's Sign" v-on:keyup.enter="searchItem(msg)"/><br><br>
   <button class="btn btn-book" v-on:click="searchItem(msg)">Search</button><br><br>
 
 
-  <table class="table table-bordered table-hover table-sm">
+  <table class="table table-bordered table-hover table-sm table-fit">
     <thead>
       <!-- Correct headers are set here -->
       <tr class="table-titles">
+        <th></th>
         <th> Item </th>
         <th> Price </th>
         <th> League </th>
@@ -21,7 +22,8 @@
     </thead>
     <tbody align="left">
       <tr v-for="item in searchResult">
-        <td> {{ item.name }} </td>
+        <td> <img v-bind:src="item.icon" /></td>
+        <td> {{ item.name }} {{ item.baseType }}</td>
         <td> {{ item.note }} </td>
         <td> {{ item.league }}</td>
         <td> {{ item.lastCharacterName }}</td>
@@ -50,7 +52,8 @@ export default {
       nextID: '',
       allItems: '',
       searchResult: '',
-      currentItems: ''
+      currentItems: '',
+      image: ''
     }
   },
   methods: {
@@ -95,22 +98,26 @@ export default {
     searchItem (keyword) {
       var self = this
       var results = []
-
+      console.log(this.allItems)
       this.allItems.forEach(function (stash) {
         stash.items.forEach(function (item) {
+          // console.log(item)
           // console.log(item.note.substring(4))
           if (keyword === item.name.substring(28)) {
+            self.image = item.icon
             results.push({
               lastCharacterName: stash.lastCharacterName,
               note: item.note,
               name: item.name.substring(28),
-              league: item.league
+              league: item.league,
+              icon: item.icon,
+              baseType: item.typeLine
             })
             self.searchResult = results
           }
         })
       })
-      console.log(self.searchResult)
+      // }, 3000)
     },
 
     sleep (ms) {
@@ -122,6 +129,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
 
 h1,
 h2 {
